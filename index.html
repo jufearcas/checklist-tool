@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist Tool</title>
+    <style>
+        /* Tema oscuro (por defecto) */
+        :root {
+            --primary: #00FFCC;
+            --background: #0A0E17;
+            --surface: #111827;
+            --text: #FFFFFF;
+            --secondary: #1A2138;
+            --accent-1: #FF3366;
+            --accent-2: #3D5AFE;
+            --accent-3: #7B42F6;
+            --glow: 0 0 10px var(--primary);
+            --gradient: linear-gradient(135deg, var(--primary), var(--accent-2));
+            --shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            --border: 1px solid rgba(0, 255, 204, 0.3);
+            --overlay: rgba(10, 14, 23, 0.8);
+        }
+
+        /* Tema claro */
+        [data-theme="light"] {
+            --primary: #00B894;
+            --background: #F0F5FF;
+            --surface: #FFFFFF;
+            --text: #1A2138;
+            --secondary: #E6EEFF;
+            --accent-1: #FF3366;
+            --accent-2: #3D5AFE;
+            --accent-3: #7B42F6;
+            --glow: 0 0 15px rgba(0, 184, 148, 0.5);
+            --gradient: linear-gradient(135deg, #00B894, #3D5AFE);
+            --shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            --border: 1px solid rgba(0, 184, 148, 0.3);
+            --overlay: rgba(240, 245, 255, 0.8);
+        }
+
+        * {
+            transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        body {
+            font-family: 'Rajdhani', 'Arial', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-image: radial-gradient(circle at 50% 50%, rgba(0, 255, 204, 0.05) 0%, rgba(10, 14, 23, 0) 70%);
+            position: relative;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-right: 30px;
+            margin-left: 20px;
+        }
+
+        .checklist-button {
+            background-color: var(--secondary);
+            color: var(--text);
+            border: 1px solid var(--primary);
+            padding: 20px 40px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            width: 200px;
+            text-align: left;
+            box-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .checklist-button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .checklist-button:hover {
+            background-color: var(--surface);
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+
+        .checklist-button:hover:before {
+            left: 100%;
+        }
+
+        .checklist-button.active {
+            background: var(--gradient);
+            color: var(--background);
+            font-weight: bold;
+            box-shadow: var(--glow);
+        }
+
+        .container {
+            background-color: var(--secondary);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            max-width: 600px;
+            width: 100%;
+            margin-right: auto;
+            border: var(--border);
+            backdrop-filter: blur(5px);
+            position: relative;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: left;
+            margin-bottom: 30px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        }
+
+        .checklist {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .major-item {
+            margin-bottom: 20px;
+            background-color: var(--surface);
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+            padding-right: 60px;
+            border-left: 3px solid var(--accent-2);
+            transition: all 0.3s ease;
+        }
+
+        .major-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 0 15px rgba(61, 90, 254, 0.3);
+        }
+
+        .major-item > label {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+            color: var(--accent-2);
+        }
+
+        .sub-items {
+            margin-left: 20px;
+        }
+
+        .sub-item {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+
+        .sub-item:hover {
+            transform: translateX(3px);
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            appearance: none;
+            border: 2px solid var(--accent-1);
+            border-radius: 4px;
+            background-color: transparent;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: var(--accent-1);
+            border-color: var(--accent-1);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            color: var(--text);
+            font-size: 14px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        input[type="checkbox"]:checked + label {
+            text-decoration: line-through;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            font-size: 4em;
+            color: var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        }
+
+        .checkmark.visible {
+            opacity: 1;
+        }
+
+        .info-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: var(--gradient);
+            color: var(--background);
+            border: none;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .info-button:hover {
+            box-shadow: var(--glow);
+            transform: scale(1.05);
+        }
+
+        .info-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            height: auto;
+            max-height: calc(100vh - 40px);
+            background-color: var(--secondary);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            display: none;
+            overflow-y: auto;
+            border: var(--border);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        #infoTitle {
+            color: var(--primary);
+            margin-top: 0;
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
+        }
+
+        #infoContent {
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Botón de cambio de tema */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 1001;
+            box-shadow: var(--shadow);
+            border: var(--border);
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: var(--glow);
+        }
+
+        .theme-toggle i {
+            font-size: 24px;
+            color: var(--background);
+        }
+
+        /* Panel de gamificación */
+        .gamification-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 200px;
+            background-color: var(--secondary);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+            z-index: 1000;
+        }
+
+        .gamification-panel h3 {
+            color: var(--primary);
+            margin-top: 0;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .level-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .level-badge {
+            background: var(--gradient);
+            color: var(--background);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .xp-counter {
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: var(--surface);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .stats {
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .stats div {
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Animaciones para recompensas */
+        @keyframes xpGain {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+
+        .xp-popup {
+            position: fixed;
+            color: var(--accent-1);
+            font-weight: bold;
+            font-size: 20px;
+            pointer-events: none;
+            animation: xpGain 1.5s forwards;
+            z-index: 2000;
+        }
+
+        @keyframes levelUp {
+            0% { transform: scale(1); opacity: 0; }
+            10% { transform: scale(1.2); opacity: 1; }
+            90% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        .level-up-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--gradient);
+            color: var(--background);
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 2000;
+            display: none;
+            box-shadow: var(--glow);
+        }
+
+        @font-face {
+            font-family: 'Rajdhani';
+            src: url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+        }
+
+        /* Iconos para el toggle de tema */
+        .icon-moon {
+            display: block;
+        }
+        
+        .icon-sun {
+            display: none;
+        }
+        
+        [data-theme="light"] .icon-moon {
+            display: none;
+        }
+        
+        [data-theme="light"] .icon-sun {
+            display: block;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Botón de cambio de tema -->
+    <div class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon icon-moon"></i>
+        <i class="fas fa-sun icon-sun"></i>
+    </div>
+
+    <!-- Panel de gamificación -->
+    <div class="gamification-panel">
+        <h3>Tu Progreso</h3>
+        <div class="level-info">
+            <div class="level-badge" id="levelBadge">Nivel 1</div>
+            <div class="xp-counter"><span id="xpCounter">0</span> XP</div>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="xpProgressBar"></div>
+        </div>
+        <div class="stats">
+            <div>
+                <span>Tareas completadas:</span>
+                <span id="tasksCompleted">0</span>
+            </div>
+            <div>
+                <span>Secciones completadas:</span>
+                <span id="sectionsCompleted">0</span>
+            </div>
+            <div>
+                <span>Siguiente nivel:</span>
+                <span id="nextLevelXP">100 XP</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de subida de nivel -->
+    <div class="level-up-popup" id="levelUpPopup">
+        <div>¡NIVEL SUBIDO!</div>
+        <div id="newLevelBadge">Nivel 2</div>
+    </div>
+
+    <div class="button-container">
+        <button class="checklist-button active" data-checklist="bonus">Grid de Qualidade</button>
+        <button class="checklist-button" data-checklist="checklist2">Tech</button>
+        <button class="checklist-button" data-checklist="checklist3">Creative</button>
+        <button class="checklist-button" data-checklist="checklist4">Measurement</button>
+        <button class="checklist-button" data-checklist="checklist5">Aprendendo GTM + Stape</button>
+    </div>
+    <div class="container">
+        <h1 id="checklistTitle">Quer Bonus? Então toma bonus!</h1>
+        <ul id="bonusChecklist" class="checklist"></ul>
+    </div>
+    <div id="infoContainer" class="info-container">
+        <h2 id="infoTitle"></h2>
+        <p id="infoContent"></p>
+    </div>
+
+    <script>
+        // Checklist data
+        const checklists = {
+            bonus: {
+                title: "Quer Bonus? Então toma bonus!",
+                items: [
+                    {
+                        name: "Call Opening",
+                        subItems: [
+                            "Presentarse Nombre",
+                            "Presentar el cargo",
+                            "Mencionar el equipo de MP",
+                            "Da valor al MP(comercial conversation)",
+                            "Confirmar el objetivo de la llamada o preguntarlo",
+                            "Demostrar conocimiento o resumen de una asesoria anterior",
+                            "Tener conocimiento de las notas de la ultima asesoria",
+                            "Confirmar cuenta (privacy)",
+                            "Confirmar recording disclosure",
+                            "Agenda",
+                            "Confirmar si el cliente desea agregar algo a la agenda"
+                        ],
+                        info: {
+                            title: "Call Opening Info",
+                            content: "Esta sección se refiere a la apertura de una llamada con el cliente. Es importante establecer una buena primera impresión y asegurarse de que ambas partes estén alineadas respecto al propósito de la llamada."
+                        }
+                    },
+                    {
+                        name: "Securing Commitments",
+                        subItems: [
+                            "Confirmar permisos"
+                        ],
+                        info: {
+                            title: "Securing Commitments Info",
+                            content: "Asegurarse de que todos los compromisos hechos durante la llamada queden claros y confirmados. Esto ayuda a construir confianza y asegurar el progreso."
+                        }
+                    },
+                    {
+                        name: "Discovery & Connection",
+                        subItems: [
+                            "Preguntar objetivo de marketing",
+                            "Confirmar sitio web (si aplica)",
+                            "Preguntar si ha tenido alguna estrategia con MP",
+                            "Preguntar que programas o plataformas utiliza para trabajar",
+                            "Preguntar sobre resultados o rendimiento de campañas",
+                            "Preguntas adicionales o experiencias"
+                        ],
+                        info: {
+                            title: "Discovery & Connection Info",
+                            content: "Esta fase se trata de comprender las necesidades y desafíos del cliente. Las preguntas adecuadas pueden revelar información valiosa para ofrecer soluciones más efectivas."
+                        }
+                    },
+                    {
+                        name: "Taylor and Solutions",
+                        subItems: [
+                            "Paso a paso de la solución",
+                            "Beneficios de usar la implementación en las campañas",
+                            "Como funciona la solución implementada",
+                            "Estadisticas y proyecciones",
+                            "Solucion implementada"
+                        ],
+                        info: {
+                            title: "Taylor and Solutions Info",
+                            content: "Adaptar soluciones específicas a las necesidades identificadas del cliente. Esto incluye explicar cómo funcionan estas soluciones y qué beneficios pueden esperar."
+                        }
+                    },
+                    {
+                        name: "Commercial Conversation",
+                        subItems: [
+                            "Estadisticas de la implementacion del proteamhub:",
+                            "Como impacta la solución directamente en las camapañas",
+                            "Dar beneficios de volver con el MP (si aplica)",
+                        ],
+                        info: {
+                            title: "Commercial Conversation Info",
+                            content: "Esta sección se centra en el aspecto comercial de la conversación, explicando el valor y el impacto de las soluciones propuestas sin ser demasiado técnico."
+                        }
+                    },
+                    {
+                        name: "Unlocking Opportunities",
+                        subItems: [
+                            "Atender las objeciones"
+                        ],
+                        info: {
+                            title: "Unlocking Opportunities Info",
+                            content: "Identificar y aprovechar las oportunidades que surgen durante la conversación para profundizar la relación o expandir el alcance del proyecto."
+                        }
+                    },
+                    {
+                        name: "Call Closing",
+                        subItems: [
+                            "Resumen",
+                            "Recordar si tiene un nuevo agendamiento (si aplica:0)",
+                            "Agendar nueva asesoria con el MP o informar pasos a seguir",
+                            "Asegurarse que no haya dudas"
+                        ],
+                        info: {
+                            title: "Call Closing Info",
+                            content: "Cerrar la llamada de manera efectiva, resumiendo los puntos clave discutidos, los próximos pasos y asegurándose de que no queden dudas pendientes."
+                        }
+                    }
+                ]
+            },
+            checklist2: {
+                title: "Tech Checklist",
+                items: [
+                    {
+                        name: "Tech Implementation",
+                        subItems: [
+                            "Server-side tagging setup",
+                            "Pixel implementation verification",
+                            "API integration check",
+                            "Performance optimization"
+                        ],
+                        info: {
+                            title: "Tech Implementation Info",
+                            content: "This section covers the technical implementation aspects of your marketing technology stack."
+                        }
+                    }
+                ]
+            },
+            checklist3: {
+                title: "Creative Checklist",
+                items: [
+                    {
+                        name: "Ad Creative Review",
+                        subItems: [
+                            "Image assets check",
+                            "Copy review",
+                            "Call-to-action optimization",
+                            "Brand consistency verification"
+                        ],
+                        info: {
+                            title: "Creative Review Info",
+                            content: "This section helps ensure your creative assets are optimized and consistent with your brand guidelines."
+                        }
+                    }
+                ]
+            },
+            checklist4: {
+                title: "Measurement Checklist",
+                items: [
+                    {
+                        name: "Analytics Setup",
+                        subItems: [
+                            "Conversion tracking verification",
+                            "Custom event implementation",
+                            "Attribution model review",
+                            "Reporting dashboard setup"
+                        ],
+                        info: {
+                            title: "Measurement Info",
+                            content: "This section ensures your measurement framework is properly set up to track performance accurately."
+                        }
+                    }
+                ]
+            },
+            checklist5: {
+                title: "Aprendendo GTM + Stape",
+                items: [
+                    {
+                        name: "GTM Fundamentals",
+                        subItems: [
+                            "Tags setup",
+                            "Triggers configuration",
+                            "Variables implementation",
+                            "Data layer understanding"
+                        ],
+                        info: {
+                            title: "GTM & Stape Learning",
+                            content: "This section covers the fundamentals of Google Tag Manager and Stape for effective implementation."
+                        }
+                    }
+                ]
+            }
+        };
+
+        // Sistema de gamificación
+        const gamification = {
+            xp: 0,
+            level: 1,
+            tasksCompleted: 0,
+            sectionsCompleted: 0,
+            levelThresholds: [0, 100, 250, 500, 1000, Infinity],
+            levelNames: ["Principiante", "Aprendiz", "Profesional", "Experto", "Maestro"],
+            
+            // Puntos por acciones
+            points: {
+                taskComplete: 5,
+                sectionComplete: 25,
+                checklistComplete: 100
+            },
+            
+            // Inicializar desde localStorage
+            init() {
+                const savedData = localStorage.getItem('checklistGameData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    this.xp = data.xp || 0;
+                    this.level = data.level || 1;
+                    this.tasksCompleted = data.tasksCompleted || 0;
+                    this.sectionsCompleted = data.sectionsCompleted || 0;
+                }
+                this.updateUI();
+            },
+            
+            // Guardar en localStorage
+            save() {
+                localStorage.setItem('checklistGameData', JSON.stringify({
+                    xp: this.xp,
+                    level: this.level,
+                    tasksCompleted: this.tasksCompleted,
+                    sectionsCompleted: this.sectionsCompleted
+                }));
+            },
+            
+            // Añadir XP y actualizar nivel
+            addXP(amount, x, y) {
+                const oldLevel = this.level;
+                this.xp += amount;
+                
+                // Determinar nivel actual
+                for (let i = 1; i < this.levelThresholds.length; i++) {
+                    if (this.xp < this.levelThresholds[i]) {
+                        this.level = i;
+                        break;
+                    }
+                }
+                
+                // Mostrar animación de XP ganado
+                this.showXPPopup(amount, x, y);
+                
+                // Si subió de nivel, mostrar animación
+                if (this.level > oldLevel) {
+                    this.showLevelUpPopup();
+                }
+                
+                this.updateUI();
+                this.save();
+            },
+            
+            // Actualizar la interfaz de usuario
+            updateUI() {
+                document.getElementById('xpCounter').textContent = this.xp;
+                document.getElementById('levelBadge').textContent = `Nivel ${this.level}`;
+                document.getElementById('tasksCompleted').textContent = this.tasksCompleted;
+                document.getElementById('sectionsCompleted').textContent = this.sectionsCompleted;
+                
+                // Calcular progreso hacia el siguiente nivel
+                const currentLevelXP = this.levelThresholds[this.level - 1];
+                const nextLevelXP = this.levelThresholds[this.level];
+                const progress = ((this.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+                
+                document.getElementById('xpProgressBar').style.width = `${progress}%`;
+                document.getElementById('nextLevelXP').textContent = `${nextLevelXP - this.xp} XP`;
+            },
+            
+            // Mostrar popup de XP ganado
+            showXPPopup(amount, x, y) {
+                const popup = document.createElement('div');
+                popup.className = 'xp-popup';
+                popup.textContent = `+${amount} XP`;
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+                document.body.appendChild(popup);
+                
+                // Eliminar después de la animación
+                setTimeout(() => {
+                    document.body.removeChild(popup);
+                }, 1500);
+            },
+            
+            // Mostrar popup de subida de nivel
+            showLevelUpPopup() {
+                const popup = document.getElementById('levelUpPopup');
+                document.getElementById('newLevelBadge').textContent = `Nivel ${this.level}`;
+                popup.style.display = 'block';
+                popup.style.animation = 'levelUp 3s forwards';
+                
+                // Ocultar después de la animación
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 3000);
+            },
+            
+            // Registrar tarea completada
+            completeTask(x, y) {
+                this.tasksCompleted++;
+                this.addXP(this.points.taskComplete, x, y);
+            },
+            
+            // Registrar sección completada
+            completeSection(x, y) {
+                this.sectionsCompleted++;
+                this.addXP(this.points.sectionComplete, x, y);
+            },
+            
+            // Registrar checklist completado
+            completeChecklist(x, y) {
+                this.addXP(this.points.checklistComplete, x, y);
+            }
+        };
+
+        // Sistema de temas claro/oscuro
+        const themeManager = {
+            init() {
+                // Verificar preferencia guardada
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme) {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                } else {
+                    // Verificar preferencia del sistema
+                    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.documentElement.setAttribute('data-theme', prefersDarkMode ? 'dark' : 'light');
+                }
+                
+                // Configurar evento de clic para el botón de tema
+                document.getElementById('themeToggle').addEventListener('click', this.toggleTheme);
+            },
+            
+            toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            }
+        };
+
+        // Function to render a checklist
+        function renderChecklist(checklistId) {
+            const checklist = checklists[checklistId];
+            if (!checklist) return;
+
+            // Update title
+            document.getElementById('checklistTitle').textContent = checklist.title;
+            
+            // Clear existing list
+            const checklistElement = document.getElementById('bonusChecklist');
+            checklistElement.innerHTML = '';
+
+            // Render new list
+            checklist.items.forEach((majorItem, majorIndex) => {
+                const majorItemElement = document.createElement('li');
+                majorItemElement.className = 'major-item';
+                
+                // Create major item checkbox
+                const majorCheckbox = document.createElement('input');
+                majorCheckbox.type = 'checkbox';
+                majorCheckbox.id = `major-${checklistId}-${majorIndex}`;
+                majorCheckbox.className = 'major-checkbox';
+                
+                // Create major item label
+                const majorLabel = document.createElement('label');
+                majorLabel.htmlFor = `major-${checklistId}-${majorIndex}`;
+                majorLabel.textContent = majorItem.name;
+                
+                // Create checkmark span
+                const checkmark = document.createElement('span');
+                checkmark.className = 'checkmark';
+                checkmark.innerHTML = '✓';
+                
+                // Create info button if info exists
+                if (majorItem.info) {
+                    const infoButton = document.createElement('button');
+                    infoButton.className = 'info-button';
+                    infoButton.textContent = 'Info';
+                    infoButton.onclick = () => showInfo(majorItem.info.title, majorItem.info.content);
+                    majorItemElement.appendChild(infoButton);
+                }
+                
+                // Create sub-items container
+                const subItemsContainer = document.createElement('ul');
+                subItemsContainer.className = 'sub-items';
+                
+                // Add sub-items
+                majorItem.subItems.forEach((subItem, subIndex) => {
+                    const subItemElement = document.createElement('li');
+                    subItemElement.className = 'sub-item';
+                    
+                    const subCheckbox = document.createElement('input');
+                    subCheckbox.type = 'checkbox';
+                    subCheckbox.id = `sub-${checklistId}-${majorIndex}-${subIndex}`;
+                    
+                    const subLabel = document.createElement('label');
+                    subLabel.htmlFor = `sub-${checklistId}-${majorIndex}-${subIndex}`;
+                    subLabel.textContent = subItem;
+                    
+                    subItemElement.appendChild(subCheckbox);
+                    subItemElement.appendChild(subLabel);
+                    subItemsContainer.appendChild(subItemElement);
+                    
+                    // Add event listener to update checkmark visibility and gamification
+                    subCheckbox.addEventListener('change', (e) => {
+                        updateMajorItemStatus(checklistId, majorIndex);
+                        
+                        // Si se marcó el checkbox, añadir puntos
+                        if (e.target.checked) {
+                            const rect = e.target.getBoundingClientRect();
+                            const x = rect.left;
+                            const y = rect.top;
+                            gamification.completeTask(x, y);
+                        }
+                    });
+                });
+                
+                // Add elements to major item
+                majorItemElement.appendChild(majorCheckbox);
+                majorItemElement.appendChild(majorLabel);
+                majorItemElement.appendChild(checkmark);
+                majorItemElement.appendChild(subItemsContainer);
+                
+                // Add major item to checklist
+                checklistElement.appendChild(majorItemElement);
+                
+                // Add event listener to toggle sub-items
+                majorCheckbox.addEventListener('change', (e) => {
+                    const subCheckboxes = majorItemElement.querySelectorAll('.sub-item input[type="checkbox"]');
+                    const wasAllChecked = Array.from(subCheckboxes).every(checkbox => checkbox.checked);
+                    
+                    subCheckboxes.forEach(checkbox => {
+                        checkbox.checked = majorCheckbox.checked;
+                    });
+                    
+                    updateMajorItemStatus(checklistId, majorIndex);
+                    
+                    // Si se completó la sección y no estaba completada antes
+                    if (majorCheckbox.checked && !wasAllChecked) {
+                        const rect = e.target.getBoundingClientRect();
+                        const x = rect.left;
+                        const y = rect.top;
+                        gamification.completeSection(x, y);
+                    }
+                });
+            });
+            
+            // Verificar si hay datos guardados para este checklist
+            loadChecklistState(checklistId);
+        }
+        
+        // Function to update major item status based on sub-items
+        function updateMajorItemStatus(checklistId, majorIndex) {
+            const majorItem = document.querySelector(`#major-${checklistId}-${majorIndex}`).closest('.major-item');
+            const subCheckboxes = majorItem.querySelectorAll('.sub-item input[type="checkbox"]');
+            const checkmark = majorItem.querySelector('.checkmark');
+            
+            const allChecked = Array.from(subCheckboxes).every(checkbox => checkbox.checked);
+            const anyChecked = Array.from(subCheckboxes).some(checkbox => checkbox.checked);
+            
+            const majorCheckbox = majorItem.querySelector('.major-checkbox');
+            majorCheckbox.checked = allChecked;
+            majorCheckbox.indeterminate = anyChecked && !allChecked;
+            
+            if (allChecked) {
+                checkmark.classList.add('visible');
+            } else {
+                checkmark.classList.remove('visible');
+            }
+            
+            // Guardar estado del checklist
+            saveChecklistState();
+            
+            // Verificar si se completó todo el checklist
+            checkIfChecklistComplete(checklistId);
+        }
+        
+        // Function to check if entire checklist is complete
+        function checkIfChecklistComplete(checklistId) {
+            const allMajorCheckboxes = document.querySelectorAll('.major-checkbox');
+            const allComplete = Array.from(allMajorCheckboxes).every(checkbox => checkbox.checked);
+            
+            if (allComplete) {
+                // Obtener posición central de la pantalla
+                const x = window.innerWidth / 2;
+                const y = window.innerHeight / 2;
+                
+                // Añadir puntos por completar todo el checklist
+                gamification.completeChecklist(x, y);
+            }
+        }
+        
+        // Function to save checklist state
+        function saveChecklistState() {
+            const activeChecklistId = document.querySelector('.checklist-button.active').getAttribute('data-checklist');
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const state = {};
+            
+            checkboxes.forEach(checkbox => {
+                state[checkbox.id] = checkbox.checked;
+            });
+            
+            localStorage.setItem(`checklistState_${activeChecklistId}`, JSON.stringify(state));
+        }
+        
+        // Function to load checklist state
+        function loadChecklistState(checklistId) {
+            const savedState = localStorage.getItem(`checklistState_${checklistId}`);
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                
+                // Restaurar estado de los checkboxes
+                Object.keys(state).forEach(id => {
+                    const checkbox = document.getElementById(id);
+                    if (checkbox) {
+                        checkbox.checked = state[id];
+                    }
+                });
+                
+                // Actualizar estado de los items principales
+                document.querySelectorAll('.major-checkbox').forEach((majorCheckbox, index) => {
+                    const checklistId = document.querySelector('.checklist-button.active').getAttribute('data-checklist');
+                    updateMajorItemStatus(checklistId, index);
+                });
+            }
+        }
+        
+        // Function to show info
+        function showInfo(title, content) {
+            const infoContainer = document.getElementById('infoContainer');
+            const infoTitle = document.getElementById('infoTitle');
+            const infoContent = document.getElementById('infoContent');
+            
+            infoTitle.textContent = title;
+            infoContent.textContent = content;
+            infoContainer.style.display = 'block';
+            
+            // Close info when clicking outside
+            document.addEventListener('click', function closeInfo(e) {
+                if (!infoContainer.contains(e.target) && e.target.className !== 'info-button') {
+                    infoContainer.style.display = 'none';
+                    document.removeEventListener('click', closeInfo);
+                }
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar sistema de temas
+            themeManager.init();
+            
+            // Inicializar sistema de gamificación
+            gamification.init();
+            
+            // Render initial checklist
+            renderChecklist('bonus');
+            
+            // Add event listeners to checklist buttons
+            const buttons = document.querySelectorAll('.checklist-button');
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active button
+                    buttons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Render selected checklist
+                    const checklistId = button.getAttribute('data-checklist');
+                    renderChecklist(checklistId);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -304,115 +304,6 @@
             color: var(--background);
         }
 
-        /* Panel de gamificación */
-        .gamification-panel {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 200px;
-            background-color: var(--secondary);
-            border-radius: 15px;
-            padding: 15px;
-            box-shadow: var(--shadow);
-            border: var(--border);
-            z-index: 1000;
-        }
-
-        .gamification-panel h3 {
-            color: var(--primary);
-            margin-top: 0;
-            text-align: center;
-            font-size: 18px;
-        }
-
-        .level-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .level-badge {
-            background: var(--gradient);
-            color: var(--background);
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .xp-counter {
-            font-weight: bold;
-            color: var(--text);
-        }
-
-        .progress-bar-container {
-            width: 100%;
-            height: 10px;
-            background-color: var(--surface);
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: var(--gradient);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-        .stats {
-            font-size: 14px;
-            color: var(--text);
-        }
-
-        .stats div {
-            margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* Animaciones para recompensas */
-        @keyframes xpGain {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 0; }
-        }
-
-        .xp-popup {
-            position: fixed;
-            color: var(--accent-1);
-            font-weight: bold;
-            font-size: 20px;
-            pointer-events: none;
-            animation: xpGain 1.5s forwards;
-            z-index: 2000;
-        }
-
-        @keyframes levelUp {
-            0% { transform: scale(1); opacity: 0; }
-            10% { transform: scale(1.2); opacity: 1; }
-            90% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-
-        .level-up-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--gradient);
-            color: var(--background);
-            padding: 20px 40px;
-            border-radius: 15px;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            z-index: 2000;
-            display: none;
-            box-shadow: var(--glow);
-        }
-
         @font-face {
             font-family: 'Rajdhani';
             src: url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
@@ -445,43 +336,10 @@
     </div>
 
     <!-- Panel de gamificación -->
-    <div class="gamification-panel">
-        <h3>Tu Progreso</h3>
-        <div class="level-info">
-            <div class="level-badge" id="levelBadge">Nivel 1</div>
-            <div class="xp-counter"><span id="xpCounter">0</span> XP</div>
-        </div>
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="xpProgressBar"></div>
-        </div>
-        <div class="stats">
-            <div>
-                <span>Tareas completadas:</span>
-                <span id="tasksCompleted">0</span>
-            </div>
-            <div>
-                <span>Secciones completadas:</span>
-                <span id="sectionsCompleted">0</span>
-            </div>
-            <div>
-                <span>Siguiente nivel:</span>
-                <span id="nextLevelXP">100 XP</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Popup de subida de nivel -->
-    <div class="level-up-popup" id="levelUpPopup">
-        <div>¡NIVEL SUBIDO!</div>
-        <div id="newLevelBadge">Nivel 2</div>
-    </div>
+    <!-- Eliminado el panel de gamificación y el popup de subida de nivel -->
 
     <div class="button-container">
         <button class="checklist-button active" data-checklist="bonus">Grid de Qualidade</button>
-        <button class="checklist-button" data-checklist="checklist2">Tech</button>
-        <button class="checklist-button" data-checklist="checklist3">Creative</button>
-        <button class="checklist-button" data-checklist="checklist4">Measurement</button>
-        <button class="checklist-button" data-checklist="checklist5">Aprendendo GTM + Stape</button>
     </div>
     <div class="container">
         <h1 id="checklistTitle">Quer Bonus? Então toma bonus!</h1>
